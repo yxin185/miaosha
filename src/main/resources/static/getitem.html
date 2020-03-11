@@ -45,10 +45,72 @@
                     <lable class="control-lable" id="sales"/>
                 </div>
             </div>
+            <div class="form-actions">
+                <button class="btn blue" id="createorder" type="submit">
+                    下单
+                </button>
+            </div>
     </div>
 </body>
 
 <script>
+
+    var g_itemVO = {}
+    jQuery(document).ready(function () {
+
+        //发送请求获取商品详情页
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/item/get",
+            data: {
+                "id": getParam("id"),
+            },
+            xhrFields: {withCredentials: true},
+            success: function (data) {
+                if (data.status == "success") {
+                    g_itemVO = data.data;
+                    reloadDom();
+                } else {
+                    alert("获取失败，原因是" + data.data.errMsg);
+                }
+            },
+            error: function (data) {
+                alert("获取失败，原因是" + data.responseText);
+            }
+        });
+
+        // 下单按钮的操作
+        $("#createorder").on("click", function () {
+            // 获取商品详情
+            $.ajax({
+                type:"POST",
+                contentType:"application/x-www-form-urlencoded",
+                url:"http://localhost:8080/order/createorder",
+                data:{
+                    "itemId":g_itemVO.id,
+                    "amount":1
+                },
+                // 至关重要:支持session跨域
+                xhrFields:{withCredentials:true},
+                success:function (data) {
+                    if(data.status == "success") {
+                        alert("下单成功");
+                        window.location.reload();
+                    }else {
+                        alert("下单失败，原因为" + data.data.errMsg);
+                        // 如果用户还没有登陆，那么直接帮助用户跳转到登陆界面
+                        if (data.data.errCode == 20003) {
+                            window.location.href="login.html";
+                        }
+                    }
+                },
+                error:function (data) {
+                    alert("下单失败，原因为" + data.responseText);
+                }
+            });
+        });
+
+    });
 
     function getParam(paramName) {
         paramValue = "", isFound = !1;
@@ -58,31 +120,6 @@
         }
         return paramValue == "" && (paramValue = null), paramValue
     }
-
-    var g_itemVO = {}
-    jQuery(document).ready(function () {
-        // 获取商品详情
-        $.ajax({
-            type:"GET",
-            url:"http://localhost:8080/item/get",
-            data:{
-                "id": getParam("id"),
-            },
-            // 至关重要
-            xhrFields:{withCredentials:true},
-            success:function (data) {
-                if(data.status == "success") {
-                    g_itemVO = data.data;
-                    reloadDom();
-                }else {
-                    alert("获取信息失败，原因为" + data.data.errMsg);
-                }
-            },
-            error:function (data) {
-                alert("获取信息失败，原因为" + data.responseText);
-            }
-        });
-    });
 
     function reloadDom() {
         $("#title").text(g_itemVO.title);

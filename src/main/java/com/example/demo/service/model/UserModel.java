@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 public class UserModel {
+
     private Integer id;
     @NotBlank(message = "用户名不能为空")
     private String name;
@@ -20,11 +21,11 @@ public class UserModel {
     @Min(value = 0, message = "年龄必须大于0")
     @Max(value = 150, message = "年龄不能大于150")
     private Integer age;
-    @NotNull(message = "手机号不能不填")
+    @NotBlank(message = "手机号不能不填")
     private String telphone;
     private String registerMode;
     private String thirdPartyMode;
-    @NotNull(message = "密码不能不填")
+    @NotBlank(message = "密码不能不填")
     private String encryptPassword;
 
 }

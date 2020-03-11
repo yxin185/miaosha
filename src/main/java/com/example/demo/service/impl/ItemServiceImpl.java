@@ -104,6 +104,30 @@ public class ItemServiceImpl implements ItemService {
         return itemModel;
     }
 
+    @Override
+    @Transactional
+    public boolean decreaseStock(Integer itemId, Integer amount) throws BusinessException {
+        int affectedRow = 0;
+        try {
+            affectedRow = itemStockDOMapper.decreaseStock(itemId, amount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("减库存方法在itemStockDOMapper出错了");
+        }
+        if (affectedRow > 0) {
+            // 更新库存成功
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void increaseSales(Integer itemId, Integer amount) throws BusinessException {
+        itemDOMapper.increaseSales(itemId, amount);
+    }
+
     private ItemModel convertModelFromDataObject(ItemDO itemDO, ItemStockDO itemStockDO) {
         ItemModel itemModel = new ItemModel();
         BeanUtils.copyProperties(itemDO, itemModel);
