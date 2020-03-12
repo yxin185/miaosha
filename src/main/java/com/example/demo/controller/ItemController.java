@@ -7,6 +7,7 @@ import com.example.demo.response.CommonReturnType;
 import com.example.demo.service.ItemService;
 import com.example.demo.service.model.ItemModel;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -79,6 +80,19 @@ public class ItemController extends BaseController {
         }
         ItemVO itemVO = new ItemVO();
         BeanUtils.copyProperties(itemModel, itemVO);
+        if (itemModel.getPromoModel() != null) {
+            itemVO.setPromoStatus(itemModel.getPromoModel().getStatus());
+            itemVO.setPromoId(itemModel.getPromoModel().getId());
+            // 将开始时间格式化一下
+            itemVO.setPromoStartDate(itemModel.getPromoModel()
+                    .getStartDate().toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")));
+
+            itemVO.setPromoPrice(itemModel.getPromoModel().getPromoItemPrice());
+        } else {
+            // 表示没有秒杀活动
+            itemVO.setPromoStatus(0);
+        }
+
         return itemVO;
     }
 }

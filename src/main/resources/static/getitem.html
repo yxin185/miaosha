@@ -10,24 +10,39 @@
 
 <body class="login">
     <div class="content">
+
         <h3 class="form-title">商品详情</h3>
+            <div id="promoStartDateContainer" class="form-group">
+                <lable style="color:blue" id="promoStatus" class="control-lable"></lable>
+                <div>
+                    <lable style="color:red" class="control-lable" id="promoStartDate"/>
+                </div>
+            </div>
             <div class="form-group">
                 <div>
                     <lable class="control-lable" id="title"/>
                 </div>
             </div>
+
             <div class="form-group">
                 <lable class="control-lable">商品描述</lable>
                 <div>
                     <lable class="control-lable" id="description"/>
                 </div>
             </div>
-            <div class="form-group">
+            <div id="normalPriceContainer" class="form-group">
                 <lable class="control-lable">商品价格</lable>
                 <div>
-                    <lable class="control-lable" id="prices"/>
+                    <lable class="control-lable" id="price"/>
                 </div>
             </div>
+            <div id="promoPriceContainer" class="form-group">
+                <lable style="color:red" class="control-lable">秒杀价格</lable>
+                <div>
+                    <lable style="color:red" class="control-lable" id="promoPrice"/>
+                </div>
+            </div>
+
             <div class="form-group">
                 <div>
                     <img style="width: 200px;height: auto;" id="imgUrl"/>
@@ -70,6 +85,7 @@
                 if (data.status == "success") {
                     g_itemVO = data.data;
                     reloadDom();
+                    setInterval(reloadDom, 1000);
                 } else {
                     alert("获取失败，原因是" + data.data.errMsg);
                 }
@@ -88,6 +104,7 @@
                 url:"http://localhost:8080/order/createorder",
                 data:{
                     "itemId":g_itemVO.id,
+                    "promoId":g_itemVO.promoId,
                     "amount":1
                 },
                 // 至关重要:支持session跨域
@@ -128,6 +145,32 @@
         $("#price").text(g_itemVO.price);
         $("#imgUrl").attr("src", g_itemVO.imgUrl);
         $("#sales").text(g_itemVO.sales);
+        if (g_itemVO.promoStatus == 1) {
+            // 秒杀活动还未开始
+            var startTime = g_itemVO.promoStartDate.replace(new RegExp("-","gm"), "/");
+            startTime = (new Date(startTime)).getTime();
+            var nowTime = Date.parse(new Date());
+            var delta = (startTime - nowTime) / 1000;
+
+            if (delta <= 0) {
+                // 活动开始了
+                g_itemVO.promoStatus = 2;
+                reloadDom();
+            }
+
+            $("#promoStartDate").text("秒杀活动将于：" + g_itemVO.promoStartDate + " 开始售卖 倒计时：" + delta + " 秒");
+            $("#promoPrice").text(g_itemVO.promoPrice);
+            // 没开始活动，现将下单按钮隐藏
+            $("#createorder").attr("disabled", true);
+        } else if (g_itemVO.promoStatus == 2) {
+            // 秒杀活动正在进行中
+            $("#promoStartDate").text("秒杀正在进行中");
+            $("#promoPrice").text(g_itemVO.promoPrice);
+
+            // 活动开始才开放按钮
+            $("#createorder").attr("disabled", false);
+            $("#normalPriceContainer").hide();
+        }
     }
 
 </script>

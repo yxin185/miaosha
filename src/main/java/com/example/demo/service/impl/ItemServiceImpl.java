@@ -7,7 +7,9 @@ import com.example.demo.dataobject.ItemStockDO;
 import com.example.demo.error.BusinessException;
 import com.example.demo.error.EmBusinessError;
 import com.example.demo.service.ItemService;
+import com.example.demo.service.PromoService;
 import com.example.demo.service.model.ItemModel;
+import com.example.demo.service.model.PromoModel;
 import com.example.demo.validator.ValidationResult;
 import com.example.demo.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +32,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ItemStockDOMapper itemStockDOMapper;
+
+    @Autowired
+    private PromoService promoService;
 
     private ItemDO convertItemDOFromItemModel(ItemModel itemModel) {
         if (itemModel == null) {
@@ -101,6 +106,15 @@ public class ItemServiceImpl implements ItemService {
 
         // 将dataobject转换为Model
         ItemModel itemModel = convertModelFromDataObject(itemDO, itemStockDO);
+
+        // 获取活动商品信息
+        PromoModel promoModel = promoService.getPromoByItemId(itemModel.getId());
+        // 此时商品的状态如果是正在进行或未开始的秒杀活动，那么就执行相应逻辑
+        if (promoModel != null && promoModel.getStatus() != 3) {
+            // 把相应的秒杀信息设置到商品信息中
+            itemModel.setPromoModel(promoModel);
+        }
+
         return itemModel;
     }
 
